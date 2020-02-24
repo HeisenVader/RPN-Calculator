@@ -1,10 +1,7 @@
 package com.hfad.calculator
 
-import android.graphics.Color
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,7 +11,6 @@ class MainActivity : AppCompatActivity() {
     private val mathEval: Evaluator = Evaluator()
     private var brackets: Int = 0
     private var mInputString: ArrayList<String> = arrayListOf()
-    private var mResultString: ArrayList<String> = arrayListOf()
     private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐")
 
     private fun textViewer(){
@@ -66,31 +62,27 @@ class MainActivity : AppCompatActivity() {
         textViewer()
     }
 
+    private val longListener = View.OnLongClickListener {
+        mInputString.clear()
+        //mResultString.clear()
+        brackets = 0
+        textViewer()
+        result.text = mInputString.joinToString("")
+        return@OnLongClickListener true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var time: Long = 0
-        val onTouchListenerDel = OnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                time = System.currentTimeMillis()
-                v.setBackgroundColor(Color.rgb(28, 232, 179))
-                v.callOnClick()
-                return@OnTouchListener true
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                if(System.currentTimeMillis() - time > 600){
-                    mInputString.clear()
-                    mResultString.clear()
-                    brackets = 0
-                    textViewer()
-                    result.text = mResultString.joinToString("")
-                }
-                v.setBackgroundColor(Color.rgb(99, 99, 99))
-                return@OnTouchListener true
-            }
-            false
+        if(savedInstanceState != null){
+            brackets = savedInstanceState.get("brackets") as Int
+            mInputString = savedInstanceState.get("input") as ArrayList<String>
+            result.text = savedInstanceState.get("result") as String
+            textViewer()
         }
-        buttonDel.setOnTouchListener(onTouchListenerDel)
+
+        buttonDel.setOnLongClickListener(longListener)
 
         button0.setOnClickListener(listener)
         button1.setOnClickListener(listener)
@@ -137,15 +129,13 @@ class MainActivity : AppCompatActivity() {
                     mInputString.add(")")
                     brackets++
                 }
-                mResultString.addAll(mInputString)
             }
             textViewer()
-            if(mResultString.isNotEmpty()) {
-                result.text = mathEval.evaluate(mResultString.joinToString("")).toString()
-                mResultString.clear()
+            if(mInputString.isNotEmpty()) {
+                result.text = mathEval.evaluate(mInputString.joinToString("")).toString()
             }
             else
-                result.text = mResultString.joinToString("")
+                result.text = mInputString.joinToString("")
         }
         buttonDel.setOnClickListener{
             if(mInputString.isNotEmpty()) {
@@ -225,6 +215,13 @@ class MainActivity : AppCompatActivity() {
             }
             textViewer()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("brackets", brackets)
+        outState.putStringArrayList("input", mInputString)
+        outState.putString("result", result.text.toString())
     }
 
 }

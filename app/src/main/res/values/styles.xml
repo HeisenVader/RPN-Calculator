@@ -23,4 +23,12 @@
         <item name="android:background">@drawable/button_effect_light</item>
     </style>
 
+    <style name="ButtonStyle.Land">
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="ButtonStyle.Light.Land">
+        <item name="android:textSize">20sp</item>
+    </style>
+
 </resources>
