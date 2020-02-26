@@ -46,7 +46,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun textViewCleaner(){
+        if(result.text != ""){
+            result.text = ""
+            mInputString.clear()
+            brackets = 0
+        }
+    }
+
+    private fun textViewSwitcher(){
+        if(result.text != "" && result.text.length < 10){
+            val st = result.text
+            result.text = ""
+            mInputString.clear()
+            brackets = 0
+            for(i in st.indices) {
+                mInputString.add(st[i].toString())
+            }
+        }
+    }
+
     private val listener = View.OnClickListener{
+        textViewCleaner()
         when (it.id){
             R.id.button0 -> numberAdder("0")
             R.id.button1 -> numberAdder("1")
@@ -96,12 +117,12 @@ class MainActivity : AppCompatActivity() {
         button9.setOnClickListener(listener)
 
         buttonDot.setOnClickListener{
+            textViewCleaner()
             if(mInputString.isEmpty()){
                 mInputString.add("0")
                 mInputString.add(".")
             }
-            else if(mTerms.contains(mInputString.last())){}
-            else {
+            else if(!mTerms.contains(mInputString.last())){
                 for (i in mInputString.size-1 downTo 0){
                     if((mTerms.contains(mInputString[i]) && mInputString[i] != ".") || mInputString[i] == "."){
                         if(mTerms.contains(mInputString[i]) && mInputString[i] != "."){
@@ -157,6 +178,7 @@ class MainActivity : AppCompatActivity() {
             textViewer()
         }
         buttonDivision.setOnClickListener{
+            textViewSwitcher()
             if (mInputString.isNotEmpty()){
                 if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")")
                     mInputString.add("÷")
@@ -164,18 +186,21 @@ class MainActivity : AppCompatActivity() {
             textViewer()
         }
         buttonMultiplication.setOnClickListener{
+            textViewSwitcher()
             if (mInputString.isNotEmpty())
                 if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")")
                     mInputString.add("*")
             textViewer()
         }
         buttonPlus.setOnClickListener{
+            textViewSwitcher()
             if (mInputString.isNotEmpty())
                 if (!mTerms.contains(mInputString.last()) || mInputString.last() == ")")
                     mInputString.add("+")
             textViewer()
         }
         buttonMinus.setOnClickListener{
+            textViewSwitcher()
             if(mInputString.isEmpty()){
                 //mInputString.add("0")
                 mInputString.add("‐")
@@ -195,6 +220,7 @@ class MainActivity : AppCompatActivity() {
             textViewer()
         }
         buttonBracketOpen.setOnClickListener{
+            textViewCleaner()
             if(mInputString.isEmpty()) {
                 mInputString.add("(")
                 brackets--
