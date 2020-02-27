@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
     private val mathEval: Evaluator = Evaluator()
     private var brackets: Int = 0
     private var mInputString: ArrayList<String> = arrayListOf()
-    private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐")
+    private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐", "^")
 
     private fun textViewer(){
         if (mInputString.isEmpty())
@@ -55,7 +55,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun textViewSwitcher(){
-        if(result.text != "" && result.text.length < 10){
+        if(result.text != "" && Double.NEGATIVE_INFINITY < result.text.toString().toDouble() &&
+                                    result.text.toString().toDouble() < Double.POSITIVE_INFINITY){
             val st = result.text
             result.text = ""
             mInputString.clear()
@@ -239,6 +240,14 @@ class MainActivity : AppCompatActivity() {
                     brackets++
                 }
             }
+            textViewer()
+        }
+
+        buttonPower?.setOnClickListener {
+            textViewSwitcher()
+            if (mInputString.isNotEmpty())
+                if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")")
+                    mInputString.add("^")
             textViewer()
         }
     }

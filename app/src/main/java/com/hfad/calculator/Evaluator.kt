@@ -1,11 +1,12 @@
 package com.hfad.calculator
 
 import java.util.*
+import kotlin.math.pow
 
 class Evaluator {
 
     private fun isTerm(c: Char): Boolean {
-        if (("+-*()÷‐".indexOf(c)) != -1)
+        if (("+-*()÷‐^".indexOf(c)) != -1)
             return true
         return false
     }
@@ -19,7 +20,8 @@ class Evaluator {
             '*' -> 4
             '÷' -> 4
             '‐' -> 5 //Унарный минус
-            else -> 6
+            '^' -> 6
+            else -> 7
         }
     }
 
@@ -102,6 +104,11 @@ class Evaluator {
                     '‐' -> {
                         val a = temp.pop()
                         result = a * -1
+                    }
+                    '^' -> {
+                        val a = temp.pop()
+                        val b = temp.pop()
+                        result = b.pow(a)
                     }
                 }
                 temp.push(result)
