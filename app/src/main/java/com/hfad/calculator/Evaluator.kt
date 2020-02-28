@@ -6,7 +6,7 @@ import kotlin.math.pow
 class Evaluator {
 
     private fun isTerm(c: Char): Boolean {
-        if (("+-*()÷‐^".indexOf(c)) != -1)
+        if (("+-*()÷‐^<≤>≥".indexOf(c)) != -1)
             return true
         return false
     }
@@ -15,13 +15,17 @@ class Evaluator {
         return when(c) {
             '(' -> 0
             ')' -> 1
-            '+' -> 2
-            '-' -> 3
-            '*' -> 4
-            '÷' -> 4
-            '‐' -> 5 //Унарный минус
-            '^' -> 6
-            else -> 7
+            '<' -> 2
+            '≤' -> 2
+            '>' -> 2
+            '≥' -> 2
+            '+' -> 3
+            '-' -> 4
+            '*' -> 5
+            '÷' -> 5
+            '‐' -> 6 //Унарный минус
+            '^' -> 7
+            else -> 8
         }
     }
 
@@ -30,7 +34,7 @@ class Evaluator {
         val termStack: Stack<Char> = Stack()
         var i = 0
         while (i < input.length){
-            if(input[i].isDigit()){
+            if(!isTerm(input[i])){
                 while (!isTerm(input[i])){
                     output += input[i]
                     i++
@@ -63,9 +67,9 @@ class Evaluator {
         return output
     }
 
-    private fun calculate(input: String): Double {
-        var result = 0.0
-        val temp: Stack<Double> = Stack()
+    private fun calculate(input: String): String {
+        var result: Operable = OpDouble(0.0)
+        val temp: Stack<Operable> = Stack()
 
         var i = 0
         while (i < input.length) {
@@ -76,7 +80,7 @@ class Evaluator {
                     i++
                     if (i == input.length) break
                 }
-                temp.push(a.toDouble())
+                temp.push(OpDouble(a.toDouble()))
                 i--
             }
             else if (isTerm(input[i])){
@@ -84,43 +88,93 @@ class Evaluator {
                     '+' -> {
                         val a = temp.pop()
                         val b = temp.pop()
-                        result = b + a
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpDouble(b.value + a.value)
+                        else
+                            return "err"
                     }
                     '-' -> {
                         val a = temp.pop()
                         val b = temp.pop()
-                        result = b - a
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpDouble(b.value - a.value)
+                        else
+                            return "err"
                     }
                     '*' -> {
                         val a = temp.pop()
                         val b = temp.pop()
-                        result = b * a
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpDouble(b.value * a.value)
+                        else
+                            return "err"
                     }
                     '÷' -> {
                         val a = temp.pop()
                         val b = temp.pop()
-                        result = b / a
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpDouble(b.value / a.value)
+                        else
+                            return "err"
                     }
                     '‐' -> {
                         val a = temp.pop()
-                        result = a * -1
+                        if(a is OpDouble)
+                            result = OpDouble(a.value * -1)
+                        else
+                            return "err"
                     }
                     '^' -> {
                         val a = temp.pop()
                         val b = temp.pop()
-                        result = b.pow(a)
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpDouble(b.value.pow(a.value))
+                        else
+                            return "err"
+                    }
+                    '<' -> {
+                        val a = temp.pop()
+                        val b = temp.pop()
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpBoolean(b.value < a.value)
+                        else
+                            return "err"
+                    }
+                    '≤' -> {
+                        val a = temp.pop()
+                        val b = temp.pop()
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpBoolean(b.value <= a.value)
+                        else
+                            return "err"
+                    }
+                    '>' -> {
+                        val a = temp.pop()
+                        val b = temp.pop()
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpBoolean(b.value > a.value)
+                        else
+                            return "err"
+                    }
+                    '≥' -> {
+                        val a = temp.pop()
+                        val b = temp.pop()
+                        if(a is OpDouble && b is OpDouble)
+                            result = OpBoolean(b.value >= a.value)
+                        else
+                            return "err"
                     }
                 }
                 temp.push(result)
             }
             i++
         }
-        return temp.peek()
+        return temp.peek().toString()
     }
 
 
 
-    fun evaluate(input: String): Double {
+    fun evaluate(input: String): String {
         val output = toRpn(input)
         return calculate(output)
     }

@@ -10,8 +10,10 @@ class MainActivity : AppCompatActivity() {
 
     private val mathEval: Evaluator = Evaluator()
     private var brackets: Int = 0
+    private var isBoolean = false
+    private var editedBy = true
     private var mInputString: ArrayList<String> = arrayListOf()
-    private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐", "^")
+    private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐", "^", "<", "≤", ">", "≥")
 
     private fun textViewer(){
         if (mInputString.isEmpty())
@@ -47,20 +49,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun textViewCleaner(){
-        if(result.text != ""){
+        if(result.text != "" && result.text.last().isDigit() && !editedBy){
             result.text = ""
             mInputString.clear()
             brackets = 0
+            isBoolean = false
         }
     }
 
     private fun textViewSwitcher(){
-        if(result.text != "" && Double.NEGATIVE_INFINITY < result.text.toString().toDouble() &&
-                                    result.text.toString().toDouble() < Double.POSITIVE_INFINITY){
+        if(result.text != "" && result.text.last().isDigit() && !editedBy){
             val st = result.text
             result.text = ""
             mInputString.clear()
             brackets = 0
+            isBoolean = false
             for(i in st.indices) {
                 mInputString.add(st[i].toString())
             }
@@ -86,8 +89,9 @@ class MainActivity : AppCompatActivity() {
 
     private val longListener = View.OnLongClickListener {
         mInputString.clear()
-        //mResultString.clear()
         brackets = 0
+        isBoolean = false
+        editedBy = true
         textViewer()
         result.text = mInputString.joinToString("")
         return@OnLongClickListener true
@@ -101,6 +105,8 @@ class MainActivity : AppCompatActivity() {
             brackets = savedInstanceState.get("brackets") as Int
             mInputString = savedInstanceState.get("input") as ArrayList<String>
             result.text = savedInstanceState.get("result") as String
+            isBoolean = savedInstanceState.get("boolean") as Boolean
+            editedBy = savedInstanceState.get("editedBy") as Boolean
             textViewer()
         }
 
@@ -152,30 +158,33 @@ class MainActivity : AppCompatActivity() {
                     brackets++
                 }
             }
+            editedBy = false
             textViewer()
             if(mInputString.isNotEmpty()) {
-                result.text = mathEval.evaluate(mInputString.joinToString("")).toString()
+                result.text = mathEval.evaluate(mInputString.joinToString(""))
             }
             else
                 result.text = mInputString.joinToString("")
         }
         buttonDel.setOnClickListener{
-            if(mInputString.isNotEmpty()) {
-                if((mInputString.last() == "." || mInputString.last() == "-") && mInputString.first() == "0" && mInputString.size == 2)
-                    mInputString.clear()
-            }
             if(mInputString.isNotEmpty()){
-                if(mInputString.last() == "("){
-                    brackets++
-                    mInputString.removeAt(mInputString.size - 1)
+                when {
+                    mInputString.last() == "<" || mInputString.last() == ">" || mInputString.last() == "≤" || mInputString.last() == "≥" -> {
+                        isBoolean = false
+                        mInputString.removeAt(mInputString.size - 1)
+                    }
+                    mInputString.last() == "(" -> {
+                        brackets++
+                        mInputString.removeAt(mInputString.size - 1)
+                    }
+                    mInputString.last() == ")" -> {
+                        brackets--
+                        mInputString.removeAt(mInputString.size - 1)
+                    }
+                    else -> mInputString.removeAt(mInputString.size - 1)
                 }
-                else if(mInputString.last() == ")"){
-                    brackets--
-                    mInputString.removeAt(mInputString.size - 1)
-                }
-                else
-                    mInputString.removeAt(mInputString.size - 1)
             }
+            editedBy = true
             textViewer()
         }
         buttonDivision.setOnClickListener{
@@ -204,18 +213,18 @@ class MainActivity : AppCompatActivity() {
             textViewSwitcher()
             if(mInputString.isEmpty()){
                 //mInputString.add("0")
-                mInputString.add("‐")
+                mInputString.add("‐") // унарный минус
             }
             else if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
-                mInputString.add("-")
+                mInputString.add("-") // бинарный минус
             }
             else if(mInputString.last() == "("){
                 //mInputString.add("0")
-                mInputString.add("‐")
+                mInputString.add("‐") // унарный минус
             }
             else if(mTerms.contains(mInputString.last()) && mInputString.last() != ")" && mInputString.last() != "."){
                 mInputString.add("(")
-                mInputString.add("‐")
+                mInputString.add("‐") // унарный минус
                 brackets--
             }
             textViewer()
@@ -250,6 +259,42 @@ class MainActivity : AppCompatActivity() {
                     mInputString.add("^")
             textViewer()
         }
+        buttonLess?.setOnClickListener {
+            textViewSwitcher()
+            if(mInputString.isNotEmpty() && !isBoolean)
+                if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
+                    mInputString.add("<")
+                    isBoolean = true
+                }
+            textViewer()
+        }
+        buttonLessOrEq?.setOnClickListener {
+            textViewSwitcher()
+            if(mInputString.isNotEmpty() && !isBoolean)
+                if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
+                    mInputString.add("≤")
+                    isBoolean = true
+                }
+            textViewer()
+        }
+        buttonGreater?.setOnClickListener {
+            textViewSwitcher()
+            if(mInputString.isNotEmpty() && !isBoolean)
+                if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
+                    mInputString.add(">")
+                    isBoolean = true
+                }
+            textViewer()
+        }
+        buttonGreaterOrEq?.setOnClickListener {
+            textViewSwitcher()
+            if(mInputString.isNotEmpty() && !isBoolean)
+                if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
+                    mInputString.add("≥")
+                    isBoolean = true
+                }
+            textViewer()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -257,6 +302,8 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("brackets", brackets)
         outState.putStringArrayList("input", mInputString)
         outState.putString("result", result.text.toString())
+        outState.putBoolean("boolean", isBoolean)
+        outState.putBoolean("editedBy", editedBy)
     }
 
 }
