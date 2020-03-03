@@ -12,9 +12,10 @@ class MainActivity : AppCompatActivity() {
     private var brackets: Int = 0
     private var ternary = 0
     private var editing = true
-    private var mInputString: ArrayList<String> = arrayListOf()
+    private var mInputString: ArrayList<String> = arrayListOf() //строка ввода пользователя
     private val mTerms: ArrayList<String> = arrayListOf("+", "-", "*", "(", ")", "÷", ".", "‐", "^", "<", "≤", ">", "≥", "?", ":")
 
+    //метод для отображения ввода пользователя
     private fun textViewer(){
         if (mInputString.isEmpty())
             expression.text = "0"
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
             expression.text = mInputString.joinToString("")
     }
 
+    //метод добавляющий цифру, переданное ему, в строку ввода
     private fun numberAdder(st: String){
         if(mInputString.isEmpty())
             mInputString.add(st)
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //очищает поле воода и результата, а также входную строку, если пользователь вводит новое число
     private fun textViewCleaner(){
         if(result.text != "" && result.text.last().isDigit() && !editing){
             result.text = ""
@@ -56,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //очищает поле выражения и переносит в него результат, если пользователь вводит новую операцию
     private fun textViewSwitcher(){
         if(result.text != "" && result.text.last().isDigit() && !editing){
             val st = result.text
@@ -68,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //слушатель для нажатия на цифры
     private val listener = View.OnClickListener{
         textViewCleaner()
         when (it.id){
@@ -85,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         textViewer()
     }
 
+    //слушатель долгих нажатий для клавиши Del
     private val longListener = View.OnLongClickListener {
         mInputString.clear()
         brackets = 0
@@ -99,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //востановление информации при смене ориентации экрана
         if(savedInstanceState != null){
             brackets = savedInstanceState.getInt("brackets")
             mInputString = savedInstanceState.get("input") as ArrayList<String>
@@ -121,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         button8.setOnClickListener(listener)
         button9.setOnClickListener(listener)
 
+        //слушатель "." не допускает добавление двух точек в одно число и добавление точек после операторов и скобок
         buttonDot.setOnClickListener{
             textViewCleaner()
             if(mInputString.isEmpty()){
@@ -143,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             }
             textViewer()
         }
+        //слушатель "=" добавляет недостающие закрывающие скобки, удаляет оператор если он в конце строки, не пропускает незаконченные тернарные выражения
         buttonEqually.setOnClickListener{
             if(mInputString.isNotEmpty()) {
                 if(mInputString.last() == ":")
@@ -172,6 +181,7 @@ class MainActivity : AppCompatActivity() {
                     result.text = mInputString.joinToString("")
             }
         }
+        //слушатель "Del" следит за тем что удаляет
         buttonDel.setOnClickListener{
             if(mInputString.isNotEmpty()){
                 when {
@@ -197,6 +207,7 @@ class MainActivity : AppCompatActivity() {
             editing = true
             textViewer()
         }
+
         buttonDivision.setOnClickListener{
             textViewSwitcher()
             if (mInputString.isNotEmpty()){
@@ -219,17 +230,16 @@ class MainActivity : AppCompatActivity() {
                     mInputString.add("+")
             textViewer()
         }
+        //слушатель "-" в зависимости от последнего символа в строке ввода добавляет унарный(дефис) или бинарный(тире) минус
         buttonMinus.setOnClickListener{
             textViewSwitcher()
             if(mInputString.isEmpty()){
-                //mInputString.add("0")
                 mInputString.add("‐") // унарный минус
             }
             else if(!mTerms.contains(mInputString.last()) || mInputString.last() == ")") {
                 mInputString.add("-") // бинарный минус
             }
             else if(mInputString.last() == "("){
-                //mInputString.add("0")
                 mInputString.add("‐") // унарный минус
             }
             else if(mTerms.contains(mInputString.last()) && mInputString.last() != ")" && mInputString.last() != "."){
@@ -239,6 +249,7 @@ class MainActivity : AppCompatActivity() {
             }
             textViewer()
         }
+        //открывающая скобка не добавляется после открывающей скобки, точки, числа
         buttonBracketOpen.setOnClickListener{
             textViewCleaner()
             if(mInputString.isEmpty()) {
@@ -252,6 +263,7 @@ class MainActivity : AppCompatActivity() {
                 }
             textViewer()
         }
+        //закрывающая скобка не добавляется если ранее не было открывающих скобок или последний символ в строке ввода - оператор
         buttonBracketClose.setOnClickListener{
             if(mInputString.isNotEmpty()){
                 if((!mTerms.contains(mInputString.last()) || mInputString.last() == ")") && brackets < 0) {
@@ -324,7 +336,7 @@ class MainActivity : AppCompatActivity() {
             textViewer()
         }
     }
-
+    //сохранение данных при смене ориентации экрана
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt("brackets", brackets)
